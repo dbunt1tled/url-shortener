@@ -1,4 +1,4 @@
-package config
+package env
 
 import (
 	"github.com/ilyakaznacheev/cleanenv"
@@ -30,11 +30,11 @@ type CORS struct {
 }
 
 type JWT struct {
-	PublicKey       string `env:"JWT_PUBLIC_KEY" env-required:"true"`
-	PrivateKey      string `env:"JWT_PRIVATE_KEY" env-required:"true"`
-	Algorithm       string `env:"JWT_TOKEN_ALGORITHM" env-default:"HS256"`
-	AccessLifeTime  int    `env:"TOKEN_ACCESS_LIFE_TIME_SECONDS" env-default:"3600"`
-	RefreshLifeTime int    `env:"TOKEN_REFRESH_LIFE_TIME_SECONDS" env-default:"7200"`
+	PublicKey       string        `env:"JWT_PUBLIC_KEY" env-required:"true"`
+	PrivateKey      string        `env:"JWT_PRIVATE_KEY" env-required:"true"`
+	Algorithm       string        `env:"JWT_TOKEN_ALGORITHM" env-default:"HS256"`
+	AccessLifeTime  time.Duration `env:"TOKEN_ACCESS_LIFE_TIME_SECONDS" env-default:"3600s"`
+	RefreshLifeTime time.Duration `env:"TOKEN_REFRESH_LIFE_TIME_SECONDS" env-default:"7200s"`
 }
 
 func MustLoadConfig() *Config {
@@ -53,4 +53,13 @@ func MustLoadConfig() *Config {
 	}
 
 	return &cfg
+}
+
+var instance *Config
+
+func GetConfigInstance() *Config {
+	if instance == nil {
+		instance = MustLoadConfig()
+	}
+	return instance
 }

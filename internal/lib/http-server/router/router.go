@@ -5,7 +5,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"go_first/internal/config"
+	"go_first/internal/config/env"
 	auth "go_first/internal/lib/http-server/action/auth"
 	"go_first/internal/lib/http-server/action/urlshort"
 	"go_first/internal/lib/http-server/action/user"
@@ -18,7 +18,7 @@ import (
 
 func NewRouter(
 	storage storage.Storage,
-	cfg *config.Config,
+	cfg *env.Config,
 	locale *i18n.Localizer,
 	bundle *i18n.Bundle,
 	log *slog.Logger,
@@ -51,7 +51,7 @@ func NewRouter(
 		r.Post("/", user.CreateUserAction(log, storage))
 	})
 	router.Route("/auth", func(r chi.Router) {
-		r.Post("/login", auth.LoginAction(log, storage))
+		r.Post("/login", auth.LoginAction(log, storage, locale))
 	})
 	router.Get("/{alias}", urlshort.GetUrlAction(storage))
 

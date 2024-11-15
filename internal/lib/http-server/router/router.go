@@ -44,7 +44,7 @@ func NewRouter(
 		MaxAge:           300, // Maximum value not ignored by any of major browsers
 	}))
 	router.Route("/url", func(r chi.Router) {
-		r.Use(httpMiddlewares.AuthBearer())
+		r.Use(httpMiddlewares.AuthBearer(storage))
 		r.Post("/", urlshort.CreateUrlAction(log, storage))
 	})
 	router.Route("/users", func(r chi.Router) {

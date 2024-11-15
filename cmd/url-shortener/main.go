@@ -1,17 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go_first/internal/config"
 	"go_first/internal/config/env"
-	"go_first/internal/lib/common/jwt"
 	"go_first/internal/lib/http-server/router"
 	"go_first/internal/lib/logger"
 	"go_first/storage/mysql"
 	"net/http"
 	"os"
-	"time"
 )
 
 func main() {
@@ -19,31 +16,6 @@ func main() {
 	cfg := env.GetConfigInstance()
 	log := config.SetupLogger(cfg.Env, cfg.Debug)
 	bundle := config.SetupLocale()
-	//fmt.Println(locale.MustLocalize(&i18n.LocalizeConfig{
-	//	MessageID: "already_exists",
-	//	TemplateData: map[string]interface{}{
-	//		"first_name":  "John",
-	//		"second_name": "Doe",
-	//	},
-	//}))
-	//fmt.Println(loc.MustLocalize(&i18n.LocalizeConfig{MessageID: "already_exists"}))
-	data := map[string]interface{}{
-		"first_name":  "John",
-		"second_name": "Doe",
-		"exp":         time.Now().Add(time.Second * time.Duration(1)).Unix(),
-	}
-	token, err := jwt.JWToken{}.Encode(data)
-	if err != nil {
-		log.Error("Error token", logger.Error(err))
-		os.Exit(1)
-	}
-	time.Sleep(time.Second * time.Duration(1))
-	claims, err := jwt.JWToken{}.Decode(token, false)
-	if err != nil {
-		log.Error("Error claims", logger.Error(err))
-		os.Exit(1)
-	}
-	fmt.Println(claims)
 	storage, err := mysql.Connection(cfg.DatabaseDSN)
 	defer mysql.ConnectionClose(storage)
 	if err != nil {

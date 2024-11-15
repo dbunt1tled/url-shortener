@@ -8,6 +8,7 @@ import (
 	"go_first/internal/lib/common"
 	"go_first/internal/lib/common/model/user"
 	"go_first/internal/lib/common/password"
+	"go_first/internal/lib/service/security"
 	"go_first/storage"
 	"log/slog"
 	"net/http"
@@ -36,7 +37,7 @@ func LoginAction(
 			http.Error(w, "Error validate request"+err.Error()+"\n"+strings.Join(common.ValidationErrorString(err.(validator.ValidationErrors)), "\n"), 422)
 			return
 		}
-		u, err = storage.GetIdentity(request.Login)
+		u, err = storage.GetUserIdentity(request.Login)
 
 		if err != nil {
 			http.Error(w, locale.MustLocalize(&i18n.LocalizeConfig{
@@ -57,9 +58,13 @@ func LoginAction(
 			}), http.StatusUnprocessableEntity)
 			return
 		}
-		if err := jsonapi.MarshalPayload(w, u); err != nil {
+		tokens, err := security.GetAuthTokens(*u)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if err := jsonapi.MarshalPayload(w, tokens); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-
 	}
 }

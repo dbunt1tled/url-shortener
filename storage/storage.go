@@ -11,5 +11,5 @@ type Storage interface {
 	GetURL(filter mysql.URLFilter) (*urlshort.URLShort, error)
 	CreateUser(firstName string, secondName string, email string, phoneNumber string, password string, status int) (*user.User, error)
 	GetUser(filter mysql.UserFilter) (*user.User, error)
-	GetIdentity(login string) (*user.User, error)
+	GetUserIdentity(login string) (*user.User, error)
 }

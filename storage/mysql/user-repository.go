@@ -96,7 +96,11 @@ func (db *Mysql) GetUser(filter UserFilter) (*user.User, error) {
 		sqlQuery += " AND status = " + fmt.Sprint(filter.Status) + " "
 	}
 
-	sqlQuery = fmt.Sprintf("SELECT * FROM users WHERE 1=1 AND (%s)LIMIT 1;", sqlQuery)
+	if filter.ID > 0 {
+		sqlQuery += " AND id = " + fmt.Sprint(filter.ID) + " "
+	}
+
+	sqlQuery = fmt.Sprintf("SELECT * FROM users WHERE 1=1 %s LIMIT 1;", sqlQuery)
 
 	smt, err := db.db.Prepare(sqlQuery)
 	if err != nil {
@@ -113,7 +117,7 @@ func (db *Mysql) GetUser(filter UserFilter) (*user.User, error) {
 	return nil, errors.New("user not found")
 }
 
-func (db *Mysql) GetIdentity(login string) (*user.User, error) {
+func (db *Mysql) GetUserIdentity(login string) (*user.User, error) {
 	sqlQuery := fmt.Sprintf("SELECT * FROM users WHERE status=1 AND (phone_number = ? OR email = ?) LIMIT 1;")
 
 	smt, err := db.db.Prepare(sqlQuery)

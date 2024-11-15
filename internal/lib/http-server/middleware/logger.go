@@ -27,7 +27,7 @@ func Logger(log *slog.Logger) func(next http.Handler) http.Handler {
 			defer func() {
 				entry.Info("http request complete",
 					slog.Int("status", ww.Status()),
-					slog.Duration("duration", time.Since(t1)),
+					slog.Duration("duration", time.Since(t1).Round(time.Millisecond)).String(),
 					slog.Int("bytes", ww.BytesWritten()),
 					slog.String("content-type", ww.Header().Get("Content-Type")),
 				)

@@ -1,44 +1,44 @@
 package main
 
 import (
-	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go_first/internal/config"
-	httpMiddlewares "go_first/internal/lib/http-server/middleware"
+	"go_first/internal/lib/http-server/router"
 	"go_first/internal/lib/logger"
 	"go_first/storage/mysql"
+	"net/http"
 	"os"
-	"time"
 )
 
 func main() {
+	var locale *i18n.Localizer
 	cfg := config.MustLoadConfig()
 	log := config.SetupLogger(cfg.Env, cfg.Debug)
+	bundle := config.SetupLocale()
+	//fmt.Println(locale.MustLocalize(&i18n.LocalizeConfig{
+	//	MessageID: "already_exists",
+	//	TemplateData: map[string]interface{}{
+	//		"first_name":  "John",
+	//		"second_name": "Doe",
+	//	},
+	//}))
+	//fmt.Println(loc.MustLocalize(&i18n.LocalizeConfig{MessageID: "already_exists"}))
 	storage, err := mysql.Connection(cfg.DatabaseDSN)
 	defer mysql.ConnectionClose(storage)
 	if err != nil {
 		log.Error("Error storage", logger.Error(err))
 		os.Exit(1)
 	}
-	//id, err := storage.CreateURL("https://www.google.com", "google")
-	//if err != nil {
-	//	log.Error("Error storage", logger.Error(err))
-	//	os.Exit(1)
-	//}
-
-	//url, err := storage.GetURL(mysql.URLFilter{Alias: "google"})
-	//fmt.Println(url)
-
-	router := chi.NewRouter()
-	router.Use(middleware.RequestID)
-	router.Use(middleware.RealIP)
-	router.Use(middleware.Compress(5))
-	router.Use(middleware.Timeout(60 * time.Second))
-	router.Use(httpMiddlewares.Logger(log))
-	router.Use(middleware.Recoverer)
-	router.Use(middleware.URLFormat)
-
-	log.Debug("Hello world Debug")
-	fmt.Println(cfg)
+	log.Debug("Start listening on address: " + cfg.HTTPServer.Address)
+	server := &http.Server{
+		Addr:         cfg.HTTPServer.Address,
+		Handler:      router.NewRouter(storage, cfg, locale, bundle, log),
+		ReadTimeout:  cfg.HTTPServer.Timeout,
+		WriteTimeout: cfg.HTTPServer.Timeout,
+		IdleTimeout:  cfg.HTTPServer.IdleTimeout,
+	}
+	if err := server.ListenAndServe(); err != nil {
+		log.Error("Error listening on address: " + cfg.HTTPServer.Address)
+		os.Exit(1)
+	}
 }

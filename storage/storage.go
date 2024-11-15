@@ -1,18 +1,15 @@
 package storage
 
 import (
-	"github.com/pkg/errors"
+	"go_first/internal/lib/common/model/urlshort"
+	"go_first/internal/lib/common/model/user"
 	"go_first/storage/mysql"
 )
 
-var (
-	ErrUrlNotFound = errors.New("url not found")
-	ErrUrlExists   = errors.New("url exists")
-)
-
 type Storage interface {
-	CreateURL(s string, alias string) (int64, error)
-	GetURL(filter mysql.URLFilter) (*mysql.URL, error)
-	UpdateURL(id int64, alias string) (*mysql.URL, error)
-	DeleteURL(id int64) error
+	CreateURL(s string, alias string) (*urlshort.URLShort, error)
+	GetURL(filter mysql.URLFilter) (*urlshort.URLShort, error)
+	CreateUser(firstName string, secondName string, email string, phoneNumber string, password string, status int) (*user.User, error)
+	GetUser(filter mysql.UserFilter) (*user.User, error)
+	GetIdentity(login string) (*user.User, error)
 }

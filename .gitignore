@@ -32,4 +32,5 @@ go.work.sum
 
 # env file
 .env
-
+rest-api.http
+http-client.env.json

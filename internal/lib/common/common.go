@@ -1,9 +1,8 @@
 package common
 
 import (
-	"crypto/rand"
 	"fmt"
-	"math/big"
+	"github.com/go-playground/validator/v10"
 	"reflect"
 )
 
@@ -19,33 +18,11 @@ func IsSliceVarOfType(slice interface{}, elemType reflect.Type) bool {
 	return t.Elem() == elemType
 }
 
-func RandBytes(n uint) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	// Note that err == nil only if we read len(b) bytes.
-	if err != nil {
-		return nil, err
+func ValidationErrorString(validationErrors validator.ValidationErrors) []string {
+	errors := make([]string, 0)
+	for _, err := range validationErrors {
+		errors = append(errors, fmt.Sprintf("Field %s: %s - %s", err.Field(), err.ActualTag(), err.Tag()))
+		// errors = append(errors, ?err.Translate(ut))
 	}
-
-	return b, nil
-}
-
-func GetHexString(bytes []byte) string {
-	key := new(big.Int).SetBytes(bytes)
-	base16str := fmt.Sprintf("%X", key)
-	return base16str
-}
-
-func RandStringBytes(length uint) (string, error) {
-	var realLength uint
-	if length%2 == 0 {
-		realLength = length / 2
-	} else {
-		realLength = length/2 + 1
-	}
-	bytes, err := RandBytes(realLength)
-	if err != nil {
-		return "", err
-	}
-	return GetHexString(bytes)[:length], nil
+	return errors
 }

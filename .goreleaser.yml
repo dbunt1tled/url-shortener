@@ -1,13 +1,9 @@
-version: 1
-
-before:
-  hooks:
-    - go mod tidy
-    - go generate ./...
+version: 2
 
 builds:
-  - main: ./cmd/main.go
-    binary: 'github-stargazers'
+  - id: url_shortener
+    main: ./cmd/urlshortener/main.go
+    binary: url_shortener
     env:
       - CGO_ENABLED=0
       - GOGC=150
@@ -19,23 +15,24 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - '-s -w'
-      - '-X main.version={{ .Version }}'
-      - '-X main.commit={{ .Commit }}'
-      - '-X main.date={{ .Date }}'
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
 
 archives:
-  - name_template: >-
+  - id: url_shortener
+    name_template: >-
       {{- .ProjectName }}_
       {{- title .Os }}_
       {{- if eq .Arch "amd64" }}x86_64
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    format: tar.gz
     format_overrides:
       - goos: windows
         format: zip
+    format: tar.gz
 
 checksum:
   name_template: 'checksum.txt'
@@ -47,16 +44,22 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - 'docs\('
-      - 'test\('
-      - 'ci\('
-      - 'build\('
-      - 'style\('
-      - 'refactor\('
+      - '^docs\('
+      - '^test\('
+      - '^ci\('
+      - '^build\('
+      - '^style\('
+      - '^refactor\('
 
+# Release configuration
 release:
   github:
     owner: 'dbunt1tled'
-    name: 'github-stargazers'
+    name: 'url-shortener'
   draft: false
   prerelease: auto
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...

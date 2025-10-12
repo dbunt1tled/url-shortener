@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
@@ -12,11 +11,11 @@ func SetupLocale() *i18n.Bundle {
 	bundle.RegisterUnmarshalFunc("toml", toml.Unmarshal)
 	_, err := bundle.LoadMessageFile("resources/en/message.en.toml")
 	if err != nil {
-		fmt.Println(err.Error())
+		panic(err.Error())
 	}
 	_, err = bundle.LoadMessageFile("resources/ru/message.ru.toml")
 	if err != nil {
-		fmt.Println(err.Error())
+		panic(err.Error())
 	}
 	return bundle
 }

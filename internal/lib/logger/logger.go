@@ -2,14 +2,21 @@ package logger
 
 import (
 	"fmt"
-	"go_first/internal/config"
 	"log/slog"
+
+	"github.com/pkg/errors"
 )
 
+type StackTracer interface {
+	StackTrace() errors.StackTrace
+	Error() string
+}
+
 func Error(err error) []slog.Attr {
-	if err, ok := err.(config.StackTracer); ok {
+	var er StackTracer
+	if errors.As(err, &er) {
 		stack := ""
-		for _, f := range err.StackTrace() {
+		for _, f := range er.StackTrace() {
 			stack += fmt.Sprintf("%+s:%d\n", f, f)
 		}
 		return []slog.Attr{

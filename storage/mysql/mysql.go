@@ -1,31 +1,52 @@
 package mysql
 
 import (
-	"database/sql"
-	"github.com/pkg/errors"
-	"log"
+	"sync"
+	"time"
+
+	"github.com/dbunt1tled/url-shortener/internal/config"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+)
+
+var (
+	instance *Mysql    //nolint:gochecknoglobals // singleton
+	dm       sync.Once //nolint:gochecknoglobals // singleton
 )
 
 type Mysql struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func Connection(storagePath string) (*Mysql, error) {
-	db, err := sql.Open("mysql", storagePath)
+func (db *Mysql) Close() error {
+	return db.db.Close()
+}
+
+func (db *Mysql) GetDB() *sqlx.DB {
+	return db.db
+}
+
+func GetInstance() *Mysql {
+	dm.Do(func() {
+		instance = connection()
+	})
+	return instance
+}
+
+func connection() *Mysql {
+	cfg := config.LoadConfig()
+	db, err := sqlx.Connect("mysql", cfg.DatabaseDSN)
 	if err != nil {
-		return nil, errors.Wrap(err, "db open error")
+		panic("Error init connection:" + err.Error())
 	}
+	db.SetMaxOpenConns(1)                   // TODO: need determinate
+	db.SetMaxIdleConns(1)                   // TODO: need determinate
+	db.SetConnMaxLifetime(5 * time.Minute)  //nolint:mnd // TODO: need determinate
+	db.SetConnMaxIdleTime(10 * time.Minute) //nolint:mnd // TODO: need determinate
 	err = db.Ping()
 	if err != nil {
-		return nil, errors.Wrap(err, "db ping error")
+		panic("Error ping:" + err.Error())
 	}
 
-	return &Mysql{db: db}, nil
-}
-
-func ConnectionClose(db *Mysql) {
-	err := db.db.Close()
-	if err != nil {
-		log.Fatal(errors.Wrap(err, "db close error"))
-	}
+	return &Mysql{db: db}
 }

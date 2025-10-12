@@ -1,41 +1,57 @@
 package middleware
 
+import "C"
 import (
-	"github.com/go-chi/chi/v5/middleware"
+	"context"
+	"fmt"
 	"log/slog"
-	"net/http"
 	"time"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
+	"github.com/dbunt1tled/url-shortener/internal/config"
 )
 
-func Logger(log *slog.Logger) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
+func LoggerMiddleware(logger *config.AppLogger, levelStatus int) app.HandlerFunc {
+	return func(ctx context.Context, c *app.RequestContext) {
+		t := time.Now()
+		c.Next(ctx)
 
-		log = log.With(slog.String("component", "middleware/logger"))
-		log.Info("http logger enabled")
-
-		fn := func(w http.ResponseWriter, r *http.Request) {
-			entry := log.With(
-				slog.String("method", r.Method),
-				slog.String("url", r.URL.String()),
-				slog.String("path", r.URL.Path),
-				slog.String("remoteAddr", r.RemoteAddr),
-				slog.String("userAgent", r.UserAgent()),
-				slog.String("request_id", middleware.GetReqID(r.Context())),
-			)
-			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
-			t1 := time.Now()
-			defer func() {
-				entry.Info("http request complete",
-					slog.Int("status", ww.Status()),
-					slog.Duration("duration", time.Since(t1).Round(time.Millisecond)).String(),
-					slog.Int("bytes", ww.BytesWritten()),
-					slog.String("content-type", ww.Header().Get("Content-Type")),
-				)
-			}()
-			next.ServeHTTP(ww, r)
+		if c.Response.StatusCode() < levelStatus {
+			return
 		}
+		headers := make(map[string]string)
 
-		return http.HandlerFunc(fn)
+		c.Request.Header.VisitAll(func(k, v []byte) {
+			headers[string(k)] = string(v)
+		})
+		logger.Log(
+			ctx,
+			parseLevel(c.Response.StatusCode()),
+			fmt.Sprintf("[HTTP] request (%s) %s", c.Method(), c.FullPath()),
+			slog.String("url", c.URI().String()),
+			slog.Any("headers", headers),
+			slog.String("remoteAddr", c.ClientIP()),
+			slog.String("reqBody", string(c.Request.Body())),
+			slog.String("userAgent", string(c.UserAgent())),
+			slog.Int("status", c.Response.StatusCode()),
+			slog.String("duration", time.Since(t).Round(time.Millisecond).String()),
+			slog.String("resBody", string(c.Response.Body())),
+		)
 	}
+}
 
+func parseLevel(status int) slog.Level {
+	switch {
+	case status < consts.StatusMultipleChoices:
+		return slog.LevelDebug
+	case status >= consts.StatusMultipleChoices && status < consts.StatusBadRequest:
+		return slog.LevelInfo
+	case status >= consts.StatusBadRequest && status < consts.StatusInternalServerError:
+		return slog.LevelWarn
+	case status >= consts.StatusInternalServerError:
+		return slog.LevelError
+	default:
+		return slog.LevelDebug
+	}
 }

@@ -5,7 +5,6 @@ builds:
     main: ./cmd/urlshortener/main.go
     binary: url_shortener
     env:
-      - CGO_ENABLED=0
       - GOGC=150
     goos:
       - linux

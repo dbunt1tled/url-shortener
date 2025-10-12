@@ -19,6 +19,8 @@ builds:
       - -X main.version={{.Version}}
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
+    flags:
+      - -tags=!netpoll
 
 archives:
   - id: url_shortener
@@ -32,7 +34,7 @@ archives:
     formats: ['tar.gz']
     format_overrides:
       - goos: windows
-        formats: [ 'zip' ]
+        formats: ['zip']
 
 checksum:
   name_template: 'checksum.txt'
@@ -51,7 +53,6 @@ changelog:
       - '^style\('
       - '^refactor\('
 
-# Release configuration
 release:
   github:
     owner: 'dbunt1tled'

@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"github.com/cloudwego/hertz/pkg/network/netpoll"
+	"github.com/cloudwego/hertz/pkg/common/config"
+	"github.com/dbunt1tled/url-shortener/cmd/urlshortener/transport"
 	"github.com/dbunt1tled/url-shortener/internal/app/container"
-	"github.com/dbunt1tled/url-shortener/internal/config"
+	cfg "github.com/dbunt1tled/url-shortener/internal/config"
 	"github.com/dbunt1tled/url-shortener/internal/lib/http-server/routes"
 	"github.com/dbunt1tled/url-shortener/internal/lib/validator"
 	"github.com/dbunt1tled/url-shortener/storage/mysql"
@@ -15,20 +16,20 @@ import (
 )
 
 func main() {
-	cfg := config.LoadConfig()
-	logger := config.LoadLogger(cfg.Env, cfg.LogLevel)
-	// localeBundle := config.SetupLocale()
+	env := cfg.LoadConfig()
+	logger := cfg.LoadLogger(env.Env, env.LogLevel)
+	// localeBundle := cfg.SetupLocale()
 	storage := mysql.GetInstance()
-	srv := server.New(
-		server.WithTransport(netpoll.NewTransporter),
-		server.WithHostPorts(cfg.HTTPAddress),
+	srvOpts := []config.Option{
+		server.WithHostPorts(env.HTTPAddress),
 		server.WithKeepAlive(true),
-		server.WithReadTimeout(cfg.HTTPTimeout),
-		server.WithWriteTimeout(cfg.HTTPTimeout),
-		server.WithIdleTimeout(cfg.HTTPIdleTimeout),
+		server.WithReadTimeout(env.HTTPTimeout),
+		server.WithWriteTimeout(env.HTTPTimeout),
+		server.WithIdleTimeout(env.HTTPIdleTimeout),
 		server.WithCustomValidator(validator.New()),
-		server.WithExitWaitTime(3*time.Second), //nolint:mnd // 3sec enough
-	)
+		server.WithExitWaitTime(3 * time.Second), //nolint:mnd // 3sec enough
+	}
+	srv := transport.NewServer(srvOpts...)
 
 	srv.OnShutdown = append(srv.OnShutdown, func(ctx context.Context) {
 		logger.Info("㋡ Quit: closing database connection")
@@ -39,29 +40,29 @@ func main() {
 		<-ctx.Done()
 		logger.Warn("Exit timeout!")
 	})
-	container, err := container.Build()
+	di, err := container.Build()
 	if err != nil {
 		panic(err)
 	}
-	err = container.Provide(func() *server.Hertz {
+	err = di.Provide(func() *server.Hertz {
 		return srv
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Provide(routes.NewRouter)
+	err = di.Provide(routes.NewRouter)
 	if err != nil {
 		panic(err)
 	}
 
-	err = container.Invoke(func(r *routes.Router) {
+	err = di.Invoke(func(r *routes.Router) {
 		r.Register()
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	logger.Debug("Start listening on address: " + cfg.HTTPAddress)
+	logger.Debug("Start listening on address: " + env.HTTPAddress)
 	srv.Spin()
 }

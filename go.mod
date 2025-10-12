@@ -1,6 +1,6 @@
 module github.com/dbunt1tled/url-shortener
 
-go 1.25.2
+go 1.25
 
 require (
 	github.com/BurntSushi/toml v1.5.0
@@ -24,7 +24,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/andeya/ameda v1.5.3 // indirect
-	github.com/andeya/goutil v1.0.1 // indirect
+	github.com/andeya/goutil v1.1.2 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
@@ -51,5 +51,5 @@ require (
 	golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b // indirect
 	golang.org/x/sys v0.37.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

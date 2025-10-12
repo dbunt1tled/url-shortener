@@ -10,6 +10,10 @@ import (
 
 // NewServer fallback — standard (TCP only).
 func NewServer(opts ...config.Option) *server.Hertz {
-	opts = append(opts, server.WithTransport(standard.NewTransporter()))
+	fallbackTransport := func(opt *config.Options) network.Transporter {
+		return standard.NewTransporter(opt)
+	}
+
+	opts = append(opts, server.WithTransport(fallbackTransport))
 	return server.New(opts...)
 }

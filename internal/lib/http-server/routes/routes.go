@@ -14,12 +14,14 @@ import (
 	"github.com/dbunt1tled/url-shortener/internal/lib/hasher"
 	"github.com/dbunt1tled/url-shortener/internal/lib/http-server/middleware"
 	"github.com/hertz-contrib/cors"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type Router struct {
 	srv        *server.Hertz
 	cfg        *config.Config
 	logger     *config.AppLogger
+	bundle     *i18n.Bundle
 	hasher     *hasher.Hasher
 	urlHandler *shorturl.URLHandler
 }
@@ -28,6 +30,7 @@ func NewRouter(
 	srv *server.Hertz,
 	cfg *config.Config,
 	logger *config.AppLogger,
+	bundle *i18n.Bundle,
 	hasher *hasher.Hasher,
 	urlHandler *shorturl.URLHandler,
 ) *Router {
@@ -35,6 +38,7 @@ func NewRouter(
 		srv:        srv,
 		cfg:        cfg,
 		logger:     logger,
+		bundle:     bundle,
 		hasher:     hasher,
 		urlHandler: urlHandler,
 	}
@@ -48,6 +52,7 @@ func (r *Router) Register() {
 	})
 	r.srv.Use(
 		recovery.Recovery(),
+		middleware.LocaleMiddleware(r.bundle),
 		middleware.LoggerMiddleware(r.logger, r.cfg.LogLevelStatus),
 		middleware.ErrorHandler(r.logger),
 	)

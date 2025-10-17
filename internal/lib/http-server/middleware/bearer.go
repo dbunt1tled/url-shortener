@@ -8,9 +8,13 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/dbunt1tled/url-shortener/internal/lib/hasher"
 	"github.com/dbunt1tled/url-shortener/internal/lib/http-server/e"
+	"github.com/dbunt1tled/url-shortener/internal/lib/locale"
 )
 
-const BearerSchema = "Bearer"
+const (
+	BearerSchema = "Bearer"
+	MsgErr       = "error.unauthorized"
+)
 
 func AuthBearerMiddleware(hasher *hasher.Hasher) app.HandlerFunc {
 	return func(ctx context.Context, c *app.RequestContext) {
@@ -23,7 +27,7 @@ func AuthBearerMiddleware(hasher *hasher.Hasher) app.HandlerFunc {
 				c.AbortWithStatusJSON(
 					consts.StatusUnauthorized,
 					map[string]any{
-						"error":  "unauthorized",
+						"error":  locale.LCtx(c, MsgErr, nil),
 						"status": e.Err401AuthEmptyTokenError,
 					})
 				return
@@ -34,7 +38,7 @@ func AuthBearerMiddleware(hasher *hasher.Hasher) app.HandlerFunc {
 			c.AbortWithStatusJSON(
 				consts.StatusUnauthorized,
 				map[string]any{
-					"error":  "unauthorized",
+					"error":  locale.LCtx(c, MsgErr, nil),
 					"status": e.Err401TokenError,
 				})
 			return

@@ -4,6 +4,8 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/dbunt1tled/url-shortener.svg)](https://pkg.go.dev/github.com/dbunt1tled/url-shortener)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dbunt1tled/url-shortener)](https://goreportcard.com/report/github.com/dbunt1tled/url-shortener)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/dbunt1tled/url-shortener)](https://github.com/dbunt1tled/url-shortener/releases)
+[![Build Status](https://github.com/dbunt1tled/url-shortener/actions/workflows/release.yml/badge.svg)](https://github.com/dbunt1tled/url-shortener/actions/workflows/release.yml)
 
 A high-performance URL shortening service built with Go, using CloudWeGo's Hertz framework, MySQL database, and dependency injection architecture.
 

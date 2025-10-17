@@ -1,8 +1,19 @@
 package validator
 
 import (
+	"fmt"
+	"strings"
+
+	"errors"
+
 	"github.com/bytedance/go-tagexpr/v2/validator"
+	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server/binding"
+	"github.com/dbunt1tled/url-shortener/internal/lib/locale"
+)
+
+const (
+	delimeter = ": "
 )
 
 type CustomValidator struct {
@@ -39,7 +50,7 @@ type Error struct {
 
 func (e *Error) Error() string {
 	if e.Msg != "" {
-		return e.FailPath + ": " + e.Msg
+		return e.FailPath + delimeter + e.Msg
 	}
 	return e.FailPath + ": invalid"
 }
@@ -50,4 +61,23 @@ func defaultErrorFactory(failPath, msg string) error {
 		FailPath: failPath,
 		Msg:      msg,
 	}
+}
+
+func LValidate(c *app.RequestContext, v interface{}) error {
+	var (
+		err     error
+		errStr  strings.Builder
+		e, eMsg []string
+	)
+	if err = c.BindAndValidate(v); err == nil {
+		return nil
+	}
+
+	e = strings.Split(err.Error(), "\t")
+	for _, ev := range e {
+		eMsg = strings.Split(ev, delimeter)
+		errStr.WriteString(fmt.Sprintf("%s\n", locale.LCtx(c, eMsg[1], locale.M{"Field": eMsg[0]})))
+	}
+
+	return errors.New(strings.TrimSuffix(errStr.String(), "\n"))
 }

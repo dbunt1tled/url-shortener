@@ -4,6 +4,7 @@ import (
 	"github.com/dbunt1tled/url-shortener/internal/app/shorturl"
 	"github.com/dbunt1tled/url-shortener/internal/config"
 	"github.com/dbunt1tled/url-shortener/internal/lib/hasher"
+	"github.com/dbunt1tled/url-shortener/internal/lib/locale"
 	"github.com/dbunt1tled/url-shortener/storage/mysql"
 	"go.uber.org/dig"
 )
@@ -19,6 +20,11 @@ func Build() (*dig.Container, error) {
 		return config.LoadLogger(cfg.Env, cfg.LogLevel)
 	})
 
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.Provide(locale.SetupLocale)
 	if err != nil {
 		return nil, err
 	}

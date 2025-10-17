@@ -11,6 +11,14 @@ import (
 	"github.com/dbunt1tled/url-shortener/internal/domain/enum"
 	"github.com/dbunt1tled/url-shortener/internal/domain/repository"
 	"github.com/dbunt1tled/url-shortener/internal/lib/http-server/e"
+	"github.com/dbunt1tled/url-shortener/internal/lib/locale"
+	"github.com/dbunt1tled/url-shortener/internal/lib/validator"
+)
+
+const (
+	UrLNotFound  = "url not found"
+	UrLUpdateErr = "url update error"
+	UrLDeleteErr = "url delete error"
 )
 
 type URLHandler struct {
@@ -30,7 +38,7 @@ func (h *URLHandler) NewUrl(c context.Context, ctx *app.RequestContext) {
 		uid int64
 	)
 
-	if err = ctx.BindAndValidate(&req); err != nil {
+	if err = validator.LValidate(ctx, &req); err != nil {
 		ctx.Error(e.NewValidationError(err.Error(), e.Err422URLValidateCreateError))
 		return
 	}
@@ -58,7 +66,7 @@ func (h *URLHandler) Redirect(c context.Context, ctx *app.RequestContext) {
 		err error
 	)
 
-	if err = ctx.BindAndValidate(&req); err != nil {
+	if err = validator.LValidate(ctx, &req); err != nil {
 		ctx.Error(e.NewValidationError(err.Error(), e.Err422URLValidateCreateError))
 		return
 	}
@@ -72,17 +80,17 @@ func (h *URLHandler) Redirect(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 	if url == nil {
-		h.logger.Warn("url not found", req)
-		ctx.Error(e.NewNotFoundError("url not found", e.Err404URLNotFound))
+		h.logger.Warn(locale.LCtx(ctx, UrLNotFound, nil), req)
+		ctx.Error(e.NewNotFoundError(UrLNotFound, e.Err404URLNotFound))
 		return
 	}
 
 	if url.ExpiredAt.Before(time.Now()) {
-		h.logger.Warn("url not found", err, slog.Any("request", req))
-		ctx.Error(e.NewNotFoundError("url not found", e.Err404URLExpired))
+		h.logger.Warn(locale.LCtx(ctx, UrLNotFound, nil), err, slog.Any("request", req))
+		ctx.Error(e.NewNotFoundError(locale.LCtx(ctx, UrLNotFound, nil), e.Err404URLExpired))
 		_, err = h.urlService.Delete(c, url.ID)
 		if err != nil {
-			h.logger.Error("url delete error", err, slog.Any("request", req))
+			h.logger.Error(locale.LCtx(ctx, UrLDeleteErr, nil), err, slog.Any("request", req))
 		}
 		return
 	}
@@ -92,7 +100,7 @@ func (h *URLHandler) Redirect(c context.Context, ctx *app.RequestContext) {
 		"last_visited_at": time.Now(),
 	})
 	if err != nil {
-		h.logger.Error("url update error", err, slog.Any("request", req))
+		h.logger.Error(locale.LCtx(ctx, UrLUpdateErr, nil), err, slog.Any("request", req))
 	}
 
 	ctx.Redirect(consts.StatusMovedPermanently, []byte(url.URL))

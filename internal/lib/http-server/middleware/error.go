@@ -20,7 +20,7 @@ func ErrorHandler(logger *config.AppLogger) app.HandlerFunc {
 			return
 		}
 
-		var er *e.DomainError
+		var er *e.ErrNo
 		switch {
 		case errors.As(err.Err, &er):
 			logger.Error(er.Error(), er)

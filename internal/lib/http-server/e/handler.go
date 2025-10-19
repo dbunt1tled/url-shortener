@@ -13,7 +13,7 @@ func ErrorHandler(ctx context.Context, c *app.RequestContext, err error) {
 	if e == nil {
 		return
 	}
-	var er *DomainError
+	var er *ErrNo
 	switch {
 	case errors.As(e.Err, &er):
 		c.JSON(er.Code, map[string]any{

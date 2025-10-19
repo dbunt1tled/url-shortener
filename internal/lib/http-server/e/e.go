@@ -2,7 +2,7 @@ package e
 
 import "github.com/cloudwego/hertz/pkg/protocol/consts"
 
-type DomainError struct {
+type ErrNo struct {
 	Msg    string `json:"message"`
 	Code   int    `json:"code"`
 	Status int    `json:"status"`
@@ -12,8 +12,8 @@ type HTTPError interface {
 	Error() string
 }
 
-func NewDomainError(msg string, code int, status int) *DomainError {
-	return &DomainError{
+func NewErrNo(msg string, code int, status int) *ErrNo {
+	return &ErrNo{
 		Msg:    msg,
 		Code:   code,
 		Status: status,
@@ -21,33 +21,33 @@ func NewDomainError(msg string, code int, status int) *DomainError {
 }
 
 func NewNotFoundError(msg string, status int) HTTPError {
-	return NewDomainError(msg, consts.StatusNotFound, status)
+	return NewErrNo(msg, consts.StatusNotFound, status)
 }
 
 func NewBadRequestError(msg string, status int) HTTPError {
-	return NewDomainError(msg, consts.StatusBadRequest, status)
+	return NewErrNo(msg, consts.StatusBadRequest, status)
 }
 
 func NewInternalError(msg string, status int) HTTPError {
-	return NewDomainError(msg, consts.StatusInternalServerError, status)
+	return NewErrNo(msg, consts.StatusInternalServerError, status)
 }
 
 func NewForbiddenError(msg string, status int) HTTPError {
-	return NewDomainError(msg, consts.StatusForbidden, status)
+	return NewErrNo(msg, consts.StatusForbidden, status)
 }
 
 func NewUnauthorizedError(msg string, status int) HTTPError {
-	return NewDomainError(msg, consts.StatusUnauthorized, status)
+	return NewErrNo(msg, consts.StatusUnauthorized, status)
 }
 
 func NewValidationError(msg string, status int) HTTPError {
-	return NewDomainError(msg, consts.StatusUnprocessableEntity, status)
+	return NewErrNo(msg, consts.StatusUnprocessableEntity, status)
 }
 
 func NewUnprocessableEntityError(msg string, code int) HTTPError {
-	return NewDomainError(msg, code, consts.StatusUnprocessableEntity)
+	return NewErrNo(msg, code, consts.StatusUnprocessableEntity)
 }
 
-func (e DomainError) Error() string {
+func (e ErrNo) Error() string {
 	return e.Msg
 }

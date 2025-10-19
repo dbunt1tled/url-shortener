@@ -18,7 +18,6 @@ import (
 func main() {
 	env := cfg.LoadConfig()
 	logger := cfg.LoadLogger(env.Env, env.LogLevel)
-	// localeBundle := cfg.SetupLocale()
 	storage := mysql.GetInstance()
 	srvOpts := []config.Option{
 		server.WithHostPorts(env.HTTPAddress),

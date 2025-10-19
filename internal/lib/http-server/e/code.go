@@ -1,21 +1,36 @@
 package e
 
 const (
-	Err422URLValidateCreateError    = 42200001
-	Err422URLSaveError              = 42200002
-	Err422URLFindError              = 42200003
-	Err422LoginUserNotFoundError    = 42200004
-	Err422LoginAuthTokensError      = 42200005
+	// Err0System System error.
+	Err0System = iota
+)
+
+const (
+	// 401 Unauthorized errors.
+	_ = 40100000 + iota
+	Err401AuthEmptyTokenError
+	Err401TokenError
+	Err401UserNotFoundError
+	Err401UserNotActiveError
+	Err401SystemEmptyTokenError
+	Err401SystemTokenError
+)
+
+const (
+	// 404 Not Found errors.
+	_ = 40400000 + iota
+	Err404URLNotFound
+	Err404URLExpired
+)
+
+const (
+	// 422 Unprocessable Entity errors.
+	_ = 42200000 + iota
+	Err422URLValidateCreateError
+	Err422URLSaveError
+	Err422URLFindError
+	Err422LoginUserNotFoundError
+	Err422LoginAuthTokensError
 	Err422LoginComparePasswordError = 42200024
 	Err422LoginInvalidPasswordError = 42200025
-
-	Err401AuthEmptyTokenError   = 40100001
-	Err401TokenError            = 40100002
-	Err401UserNotFoundError     = 40100003
-	Err401UserNotActiveError    = 40100004
-	Err401SystemEmptyTokenError = 40100005
-	Err401SystemTokenError      = 40100005
-
-	Err404URLNotFound = 40100001
-	Err404URLExpired  = 40100002
 )
